@@ -26,12 +26,20 @@
   (let [cancel-chan (chan)
         output-chan (chan 5)
         mix-out (mix output-chan)
-        event-gen-channels (map #(event-generator % cancel-chan) (range 5))
-        ]))
+        event-gen-channels (map #(event-generator % cancel-chan) (range 5))]
+    (doseq [c event-gen-channels]
+      (admix mix-out c))
+    {:cancel-chan cancel-chan
+     :output-chan output-chan}))
 
 (comment
   (do
     (def cancel (chan 1))
     (consume-chan (event-generator 1 cancel)))
+
+  (do
+    (let [{:keys [cancel-chan output-chan]} (create-mix)]
+      (def cancel cancel-chan)
+      (consume-chan output-chan)))
 
   )
